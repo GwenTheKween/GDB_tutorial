@@ -12,7 +12,8 @@ Commands:
 GDB stuff:
 1. gdb -q: Runs gdb quietly. Blessed quietness and no copyright blurb
 2. gdb -tui: Runs with the TUI interface. it show the file that is being debugged
-3. (gdb) print <symbol>: print the given symbol, that can be a variable, a macro or a function (or more).
+3. (gdb) start: Starts the program, and stops at the first line of code in the main function.
+4. (gdb) print <symbol>: print the given symbol, that can be a variable, a macro or a function (or more).
 
 # Class flow
 
