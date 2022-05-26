@@ -43,7 +43,7 @@ int str_equal(char* a, char* b){
     return 0;
 }
 
-int string_len(char* str){
+int str_len(char* str){
     int sz = 0;
     while(*str){
         str++;
@@ -59,13 +59,33 @@ void do_compare(){
 }
 
 void do_check_substring(){
+    char *str, *sub;
+    printf("Please input the first (bigger) string: ");
+    str = le_string();
+    printf("Please input the second (smaller) string: ");
+    sub = le_string();
+    if(str_len(str) > str_len(sub)){
+        int i, size1, size2, j;
+        size1 = str_len(str);
+        size2 = str_len(sub);
+        for(i = 0; i < size1 - size2; i++){
+            for(j = 0; j < size2; j++){
+                if(str[i] != sub[j]) break;
+            }
+            if(j == size2){
+                printf("the substring happens at least once!\n");
+                return;
+            }
+        }
+    }
+    printf("It is not a substring\n");
 }
 
 void do_get_size(){
     char* str;
     printf("Please input a string: ");
     str = le_string();
-    printf("the given string has size %d\n", string_len(str));
+    printf("the given string has size %d\n", str_len(str));
     free(str);
 }
 
