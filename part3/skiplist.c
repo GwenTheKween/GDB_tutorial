@@ -18,6 +18,11 @@ static no create_no(int val){
     return n;
 }
 
+static void free_no(no n){
+    memset(n, 0, sizeof(struct list_no));
+    free(n);
+}
+
 static void insert_before(no a, no b){
     /* sanity check.  */
     if(a == NULL || b == NULL) return;
@@ -60,6 +65,18 @@ static void maybe_insert_up (no n, int mx){
     }
 }
 
+static void remove_no(no n){
+    no prev = n->left;
+    no next = n->right;
+    if(prev){
+        prev -> right = n -> right;
+    }
+    if(next) {
+        next -> left = n -> left;
+    }
+    free_no(n);
+}
+
 //==============================================================
 
 struct skipList {
@@ -90,12 +107,49 @@ static no _list_search(no start, int num, int verbose){
     }
 
     //There is a fun bug here. I can fix it for further buggage later
+    if(n -> val > num && n->left){
+        if(verbose) printf("backing once\n");
+        n = n ->left;
+    }
 
     if(n -> down != NULL){
         if(verbose) printf("moving down\n");
         return _list_search(n->down, num, verbose);
     }
     /* We're at the lowest list, so either we found it, or it doesn't exist. */
+    if(n -> val == num)
+        return n;
+    return NULL;
+}
+
+/* Move the top of the head tower to the second element of the list,
+   and return the highest node that didn't need to be moved.  */
+static no _move_head(no n){
+    no bottom = n;
+    /* Find the second number of the list.  */
+    while(bottom -> down) bottom = bottom ->down;
+    no second = bottom -> right;
+
+    /* Find the highest element of the second node of list.  */
+    while(second -> up){
+        bottom = bottom -> up;
+        second = second -> up;
+    }
+
+    /* Move all remaining nodes from the head.  */
+    /* first the quick exit, if we need to move nothing.  */
+    if (bottom == n) return n;
+    /* If we didn't take the quick exit, bottom has at least one up node.  */
+    n = bottom;
+    bottom = bottom -> up;
+    /* Move the node to be above the second, and change the value.  */
+    while(bottom) {
+        second -> up = bottom;
+        bottom -> down = second;
+        bottom -> val = second -> val;
+        second = bottom;
+        bottom = bottom -> up;
+    }
     return n;
 }
 
@@ -121,7 +175,7 @@ static void insert_head(skip_list l, int num){
     /* We need to link the new first item tower to the former tower.
        It is guaranteed that the former tower is as big as this one.  */
     m = l->head;
-    while(m && n && m->down && n -> down){
+    while(m && n){
         m->right = n;
         n-> left = m;
         m = m->down;
@@ -143,19 +197,61 @@ int insert_list(skip_list l, int num){
     }
     if(n -> val == num) return 0;
     /* this is how I expect most insertions to go */
-    no to_ins = create_no(num);
     if(n -> val > num){
+        /* This means that we are inserting in the first slot, so make
+           a new head.  */
+        if(n->left == NULL){
+            insert_head(l, num);
+            return 1;
+        }
+        no to_ins = create_no(num);
         insert_before(n, to_ins);
+        maybe_insert_up (to_ins, l->depth - 1);
     } else {
-        /* This happens when we are inserting in the first slot */
+        no to_ins = create_no(num);
         insert_after(n, to_ins);
+        maybe_insert_up (to_ins, l->depth - 1);
     }
-    maybe_insert_up (to_ins, l->depth - 1);
     return 1;
 }
 
 int search_list(skip_list l, int num){
-    return _list_search(l->head, num, 1) != NULL;
+    return _list_search(l->head, num, 0) != NULL;
+}
+
+static void _remove_head(skip_list l){
+    no bottom = _move_head(l->head);
+    /* nothing has been moved.  Change the head.  */
+    if(bottom == l->head){
+        l->head = bottom->right;
+    }
+
+    /* Free the tower.  */
+    while(bottom -> down){
+        bottom = bottom -> down;
+        free_no(bottom -> up);
+    }
+    free_no(bottom);
+}
+
+/* Returns 1 if the element was removed, 0 if not.  */
+int remove_list(skip_list l, int num){
+    if(l->head->val == num){
+        _remove_head(l);
+        return 1;
+    }
+    no n = _list_search(l->head, num, 0);
+    if(n == NULL) return 0; /* Nothing to remove.  */
+
+
+    /* this can get a double free bug, quite fun.
+       Just invert the vertical direction.  */
+    while(n -> up){
+        n = n->up;
+        remove_no(n->down);
+    }
+    remove_no(n);
+    return 1;
 }
 
 void print_list(skip_list l){
@@ -191,6 +287,21 @@ void dumb_test(skip_list l){
     }
 }
 
+static void free_level(no start){
+    no n = start;
+    while(n -> right){
+        n = n->right;
+        free_no(n->left);
+    }
+    free_no(n);
+}
+
 void free_list(skip_list l){
+    no n = l->head;
+    while(n->down){
+        n = n -> down;
+        free_level(n -> up);
+    }
+    free_level(n);
     free(l);
 }
