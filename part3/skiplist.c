@@ -117,9 +117,7 @@ static no _list_search(no start, int num, int verbose){
         return _list_search(n->down, num, verbose);
     }
     /* We're at the lowest list, so either we found it, or it doesn't exist. */
-    if(n -> val == num)
-        return n;
-    return NULL;
+    return n;
 }
 
 /* Move the top of the head tower to the second element of the list,
@@ -143,7 +141,7 @@ static no _move_head(no n){
     n = bottom;
     bottom = bottom -> up;
     /* Move the node to be above the second, and change the value.  */
-    while(bottom) {
+    while(bottom->down) {
         second -> up = bottom;
         bottom -> down = second;
         bottom -> val = second -> val;
@@ -221,10 +219,6 @@ int search_list(skip_list l, int num){
 
 static void _remove_head(skip_list l){
     no bottom = _move_head(l->head);
-    /* nothing has been moved.  Change the head.  */
-    if(bottom == l->head){
-        l->head = bottom->right;
-    }
 
     /* Free the tower.  */
     while(bottom -> down){
@@ -244,11 +238,9 @@ int remove_list(skip_list l, int num){
     if(n == NULL) return 0; /* Nothing to remove.  */
 
 
-    /* this can get a double free bug, quite fun.
-       Just invert the vertical direction.  */
-    while(n -> up){
-        n = n->up;
-        remove_no(n->down);
+    while(n -> down){
+        n = n->down;
+        remove_no(n->up);
     }
     remove_no(n);
     return 1;
@@ -258,8 +250,6 @@ void print_list(skip_list l){
     int mx = l->depth;
     no n = l->head;
     /* We have to print from the bottom to see all elements.  */
-    //TODO remove this for a fun bug
-    while(n->down) n = n->down;
     for(; n; n = n->right){
         no m = n;
         for(int i = 0; i < mx; i++){
@@ -279,12 +269,6 @@ void print_list(skip_list l){
         printf("(nil)");
     }
     printf("\n");
-}
-
-void dumb_test(skip_list l){
-    for(int i = 0; i<10; i++){
-        insert_list(l, i);
-    }
 }
 
 static void free_level(no start){
