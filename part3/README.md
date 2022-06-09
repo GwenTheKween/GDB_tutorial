@@ -1,39 +1,37 @@
 # Explanation
 
-GDB stuff:
-1. (gdb) step: Go to the next line, or enter the function in the current line.
-2. (gdb) break <location>: add a "breakpoint" instruction at the given location. Once the Inferior hits the breakpoint, the inferior will stop and GDB will report to the user that the breakpoint was hit
-3. (gdb) info break: Lists all active breakpoints
-4. (gdb) display: show a variable after any step is taken.
-5. (gdb) until [<line>]: keep executing until the given line is reached, or next line if no line is given
-6. (gdb) finish: run until the end of the current function
-7. (gdb) backtrace [<count>]: See the call stack of the program, or "how did I get here". If count is given, shows only <count> stacks
-8. (gdb) up [<count>] and (gdb) down [<count>]: move up and down the callstack, to check "why did I get here"?
-9. (gdb) info locals: Show all variables in the current frame, so you know "what is going on here".
+This is an implementation of a skip list (https://en.wikipedia.org/wiki/Skip_list ). It's a not-quite-complete one, though. It can't have the max size dynamically based on the amount of elements or randomness, and it has some bugs on removing elements.
 
+But that is for later, not for the start of the class. For the start we can see a few known bugs.
+
+# GDB stuff
+
+1. Pretty Printers - print variables in a custom way
+2. Custom Commands - make GDB do a bunch of things in sequence, for convenience
+3. Watchpoints, and watchpoint -l - Ask GDB to warn you when a bit of memory is changed.
+4. list - show code arond where you are.
+5. dprintf - print information when parts of the inferior are hit
+6. cli --args - runs inferior with the exact given line
+7. checkpoint - restart the inferior from this point
 
 # Known bugs
 
-* str_equal only checks to see if we're at the end of the first string
-* do_substring doesn't check if we are only inside the string
-* do_check_substring does not increase i when moving (better to use i+j)
-* do_check_substring does not find if the substring is exactly the end of the string
-* palindrome does not actually check the whole string. It only checks the first character with every other character
+* _list_search may return a non-NULL pointer even when the value is not found.
+* _move_head doesn't change all pointers related to the head of the list.
+* _remove_head doesn't change the head of the list.
+* remove_list final while moves in the wrong direction.
+* print_list uses the top, not bottom.
 
 # Class structure
 
-Start by talking about the program idea, run the base program, show something working. Then start working at the bugs
+Show the image, show a working print (also in the presentation). Then, "lets see a working example", create a list with depth greater than 1, insert anything and print it, and the first bug is already apparent!
 
-## str_equal
+## print_list
 
-This will be used to show the commands 1(step), 4(display), 5(until); step into the function, run a few iterations with next and display, finish with until and show the problem
+This can be used to show pretty printers and custom commands. It is probably also useful to show --args, -ex and a .gdbinit
 
-## substring
+## _move_head
 
-This will be used to show the commands 2 (break), 3(info break), and 6(finish)
+After fixing print_list, move on to inserting a number, then inserting a new number as the list head. Probably good to insert a couple of numbers before and after, though.
 
-## Palindrome
-
-This shows the final commands, 7,8 and 9, mostly helpful with recursion.
-
-check_substrings are there for extra practice
+This can show watchpoints.

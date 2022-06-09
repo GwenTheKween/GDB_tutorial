@@ -17,6 +17,28 @@ def printSingleLevel(node):
         node = node['right'].dereference()
     print(s, node['val'])
 
+def listNodePrinterLookup(val):
+    try:
+        check_type(val, 'struct list_no')
+        return listNodePrinter(val)
+    except:
+        return None
+
+class listNodePrinter(object):
+    def __init__(self, val):
+        self.val = val
+
+    def to_string(self):
+        s = 'connections: ['
+        for d in ['left', 'right', 'up', 'down']:
+            if(self.val[d]):
+                s+= d+', '
+        s = s[:-2] + '],'
+        s += 'val: '+str(self.val['val'])
+        return s
+    def display_hint(self):
+        return 'node'
+
 class printListLevel (gdb.Command):
     """Print all nodes of the list at the given level"""
     def __init__(self):
@@ -47,3 +69,4 @@ class printList (gdb.Command):
 
 printList()
 printListLevel()
+gdb.printing.register_pretty_printer(gdb.current_objfile(), listNodePrinterLookup)

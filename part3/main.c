@@ -127,7 +127,7 @@ int main(int argc, char** argv){
                 l = start_list(d);
             } else if (opt == 2) {
                 int elm;
-                printf("Please enter the value to be inserted");
+                printf("Please enter the value to be inserted:\n");
                 scanf("%d", &elm);
                 elm = insert_list(l, elm);
                 if(elm > 0) printf("insert ok\n");
@@ -137,7 +137,7 @@ int main(int argc, char** argv){
                 int elm;
                 printf("Please enter element to be searched:\n");
                 scanf("%d", &elm);
-                printf("The searched element is%s in the list", (search_list(l, elm))?"":" not");
+                printf("The searched element is%s in the list\n", (search_list(l, elm))?"":" not");
             }else if(opt == 4){
                 int elm;
                 printf("Please enter the element to be removed:\n");
