@@ -214,7 +214,8 @@ int insert_list(skip_list l, int num){
 }
 
 int search_list(skip_list l, int num){
-    return _list_search(l->head, num, 0) != NULL;
+    no n = _list_search(l->head, num, 0);
+    return n;
 }
 
 static void _remove_head(skip_list l){
